@@ -1,0 +1,236 @@
+/// Home table for all DAX measures.
+table _Measures
+	lineageTag: 2791490f-bf0e-4cd8-ac42-9cdc65d4e8f2
+
+	/// Net revenue after discount. SUMX iterates row by row (row context).
+	measure 'Sales Amount' = SUMX(Sales, Sales[Quantity] * Sales[UnitPrice] * (1 - Sales[DiscountPct]))
+		formatString: \$#,0
+		displayFolder: 1. Base
+		lineageTag: 6b7def39-dd87-42b4-a236-b2a00ee3c6f2
+
+	/// Cost of goods sold.
+	measure 'Total Cost' = SUMX(Sales, Sales[Quantity] * Sales[UnitCost])
+		formatString: \$#,0
+		displayFolder: 1. Base
+		lineageTag: 5d70060b-c579-4523-9670-7cfebff4d91c
+
+	/// Revenue minus cost.
+	measure 'Gross Margin' = [Sales Amount] - [Total Cost]
+		formatString: \$#,0
+		displayFolder: 1. Base
+		lineageTag: d16b2de2-1a61-4c2d-a1c3-53da0fcae9fd
+
+	/// DIVIDE avoids division-by-zero errors.
+	measure 'Gross Margin %' = DIVIDE([Gross Margin], [Sales Amount])
+		formatString: 0.0%
+		displayFolder: 1. Base
+		lineageTag: 8f588408-a404-4057-af0b-3ccba8aa573c
+
+	/// Distinct orders.
+	measure Orders = DISTINCTCOUNT(Sales[OrderID])
+		formatString: #,0
+		displayFolder: 1. Base
+		lineageTag: 6851979b-32c6-4bef-b9c6-487523b2bde8
+
+	measure 'Units Sold' = SUM(Sales[Quantity])
+		formatString: #,0
+		displayFolder: 1. Base
+		lineageTag: 810add85-3a3b-4d08-82b9-d3aebce0bb7b
+
+	measure 'Avg Order Value' = DIVIDE([Sales Amount], [Orders])
+		formatString: \$#,0.00
+		displayFolder: 1. Base
+		lineageTag: 98298edd-f1d7-4a5d-aeb3-a6c21d98f398
+
+	/// Revenue given away in discounts.
+	measure 'Discount Amount' = SUMX(Sales, Sales[Quantity] * Sales[UnitPrice] * Sales[DiscountPct])
+		formatString: \$#,0
+		displayFolder: 1. Base
+		lineageTag: 78bf568c-e40e-4504-aa3a-bf795e19de08
+
+	/// Year-to-date using the marked Date table.
+	measure 'Sales YTD' = TOTALYTD([Sales Amount], 'Date'[Date])
+		formatString: \$#,0
+		displayFolder: 2. Time intelligence
+		lineageTag: 79f7ce4d-4902-4fc5-b11c-906c05afb2d0
+
+	/// Same period last year.
+	measure 'Sales PY' = CALCULATE([Sales Amount], SAMEPERIODLASTYEAR('Date'[Date]))
+		formatString: \$#,0
+		displayFolder: 2. Time intelligence
+		lineageTag: 696b7af8-3d88-49b6-bc7b-5684a495ec91
+
+	/// Growth of the latest year in context vs the same period of the previous year (the grand total does not compare 2 years against 1).
+	measure 'Sales YoY %' =
+			VAR _LastYear = MAX('Date'[Year])
+			VAR _cy = CALCULATE([Sales Amount], 'Date'[Year] = _LastYear)
+			VAR _py = CALCULATE([Sales PY], 'Date'[Year] = _LastYear)
+			RETURN IF(NOT ISBLANK(_py), DIVIDE(_cy - _py, _py))
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 2. Time intelligence
+		lineageTag: 62807c3b-c36f-4547-8bdc-170f60aefa6e
+
+	measure 'Sales MTD' = TOTALMTD([Sales Amount], 'Date'[Date])
+		formatString: \$#,0
+		displayFolder: 2. Time intelligence
+		lineageTag: 6c246945-d21a-4321-bd07-78725e31cbe3
+
+	/// Last 3 months ending on the last date in context.
+	measure 'Sales Rolling 3M' = CALCULATE([Sales Amount], DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -3, MONTH))
+		formatString: \$#,0
+		displayFolder: 2. Time intelligence
+		lineageTag: bb66f082-5430-4b9d-8afb-bc760bcc9bf9
+
+	/// ALL removes product filters to get the grand total denominator.
+	measure '% of Total Sales' = DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALL(Products)))
+		formatString: 0.0%
+		displayFolder: 3. Share & ranking
+		lineageTag: 4994bcbf-46b2-4258-9962-088829ad34e3
+
+	/// Share of the product inside its own category (ALLEXCEPT keeps the Category filter).
+	measure '% of Category' = DIVIDE([Sales Amount], CALCULATE([Sales Amount], ALLEXCEPT(Products, Products[Category])))
+		formatString: 0.0%
+		displayFolder: 3. Share & ranking
+		lineageTag: 429587b0-3a60-4a83-b6d8-952b8c527426
+
+	/// Global dense rank of products by revenue (ALL(Products) ignores any category grouping).
+	measure 'Product Rank' = IF(HASONEVALUE(Products[Product]), RANKX(ALL(Products), [Sales Amount], , DESC, DENSE))
+		formatString: 0
+		displayFolder: 3. Share & ranking
+		lineageTag: b8167ef8-19a8-46be-b247-74ae7b185eb9
+
+	/// Revenue of the 5 best-selling products overall (TOPN over ALL(Products)).
+	measure 'Top 5 Products Sales' = CALCULATE([Sales Amount], TOPN(5, ALL(Products), [Sales Amount], DESC))
+		formatString: \$#,0
+		displayFolder: 3. Share & ranking
+		lineageTag: 439c5d76-dd25-414f-8ea6-7831bb94168b
+
+	/// Virtual relationships with TREATAS: Targets has no physical relationship to the model.
+	measure 'Sales Target' =
+			CALCULATE(
+			    SUM(Targets[TargetAmount]),
+			    TREATAS(VALUES('Date'[Month Start]), Targets[MonthStart]),
+			    TREATAS(VALUES(Stores[Region]), Targets[Region])
+			)
+		formatString: \$#,0
+		displayFolder: 4. Target
+		lineageTag: 34ab4ffe-b7f6-4a3c-ae8c-bfb3de72c3d1
+
+	measure 'Sales vs Target %' = DIVIDE([Sales Amount], [Sales Target])
+		formatString: 0.0%
+		displayFolder: 4. Target
+		lineageTag: e07a758e-7124-4349-9e6f-a78fe3f0d911
+
+	/// Text KPI for cards and conditional formatting.
+	measure 'Target Status' =
+			VAR _p = [Sales vs Target %]
+			RETURN SWITCH(TRUE(), ISBLANK(_p), BLANK(), _p >= 1, "On target", _p >= 0.9, "Close", "Below target")
+		displayFolder: 4. Target
+		lineageTag: 3558e85d-735c-4525-8a51-9b22b0afa826
+
+	/// CALCULATE with a filter argument on a dimension column.
+	measure 'Online Sales %' = DIVIDE(CALCULATE([Sales Amount], Stores[Channel] = "Online"), [Sales Amount])
+		formatString: 0.0%
+		displayFolder: 1. Base
+		lineageTag: 6862c6cc-bf71-4437-a855-2ec760610351
+
+	measure 'Weekend Sales %' = DIVIDE(CALCULATE([Sales Amount], 'Date'[Is Weekend] = TRUE()), [Sales Amount])
+		formatString: 0.0%
+		displayFolder: 1. Base
+		lineageTag: b43dfde2-278d-4aba-812a-8fcff81757e8
+
+	/// HTML for the HTML Content visual: 4 KPI cards with trend arrow and status colour (inline CSS).
+	measure 'HTML KPI Cards' =
+			VAR _sales = [Sales Amount]
+			VAR _margin = [Gross Margin %]
+			VAR _yoy = [Sales YoY %]
+			VAR _vsTarget = [Sales vs Target %]
+			VAR _green = "#1B9E5A"
+			VAR _amber = "#E0A100"
+			VAR _red = "#D64545"
+			VAR _yoyColor = IF(_yoy >= 0, _green, _red)
+			VAR _yoyArrow = IF(_yoy >= 0, "&#9650;", "&#9660;")
+			VAR _tgtColor = SWITCH(TRUE(), _vsTarget >= 1, _green, _vsTarget >= 0.9, _amber, _red)
+			VAR _card = "flex:1;margin:6px;padding:14px 16px;background:#FFFFFF;border-radius:10px;border:1px solid #D6DBE4;border-top:5px solid "
+			VAR _label = "<div style='font:600 13px Segoe UI;color:#5B6475;text-transform:uppercase;letter-spacing:.5px'>"
+			VAR _value = "<div style='font:700 30px Segoe UI;color:#14213D;margin-top:6px'>"
+			VAR _sub = "<div style='font:13px Segoe UI;margin-top:4px;color:"
+			RETURN
+			"<div style='display:flex;font-family:Segoe UI'>"
+			    & "<div style='" & _card & "#0F57FF'>" & _label & "Revenue</div>" & _value & FORMAT(_sales, "$#,0") & "</div>"
+			    & _sub & "#5B6475'>" & FORMAT([Orders], "#,0") & " orders &middot; AOV " & FORMAT([Avg Order Value], "$#,0") & "</div></div>"
+			    & "<div style='" & _card & "#7A4DFF'>" & _label & "Gross margin</div>" & _value & FORMAT(_margin, "0.0%") & "</div>"
+			    & _sub & "#5B6475'>" & FORMAT([Gross Margin], "$#,0") & " margin</div></div>"
+			    & "<div style='" & _card & _yoyColor & "'>" & _label & "YoY growth</div>" & _value
+			    & "<span style='color:" & _yoyColor & "'>" & _yoyArrow & " " & IF(ISBLANK(_yoy), "n/a", FORMAT(_yoy, "+0.0%;-0.0%")) & "</span></div>"
+			    & _sub & "#5B6475'>Latest year vs same period last year</div></div>"
+			    & "<div style='" & _card & _tgtColor & "'>" & _label & "Sales vs target</div>" & _value
+			    & "<span style='color:" & _tgtColor & "'>" & FORMAT(_vsTarget, "0.0%") & "</span></div>"
+			    & _sub & _tgtColor & "'>" & [Target Status] & "</div></div>"
+			& "</div>"
+		displayFolder: 5. HTML
+
+	/// HTML for the HTML Content visual: progress bar per region against target (CONCATENATEX).
+	measure 'HTML Region Progress' =
+			VAR _rows =
+			    CONCATENATEX(
+			        VALUES(Stores[Region]),
+			        VAR _pct = [Sales vs Target %]
+			        VAR _w = MIN(_pct, 1.2) / 1.2 * 100
+			        VAR _c = SWITCH(TRUE(), _pct >= 1, "#1B9E5A", _pct >= 0.9, "#E0A100", "#D64545")
+			        RETURN
+			        "<div style='margin:10px 0'>"
+			            & "<div style='display:flex;justify-content:space-between;font:600 14px Segoe UI;color:#14213D'>"
+			            & "<span>" & Stores[Region] & "</span><span style='color:" & _c & "'>" & FORMAT(_pct, "0.0%") & "</span></div>"
+			            & "<div style='position:relative;height:12px;background:#E9EDF3;border-radius:6px;margin-top:4px'>"
+			            & "<div style='width:" & FORMAT(_w, "0") & "%;height:12px;background:" & _c & ";border-radius:6px'></div>"
+			            & "<div style='position:absolute;left:83.3%;top:-3px;width:2px;height:18px;background:#14213D'></div>"
+			            & "</div>"
+			            & "<div style='font:12px Segoe UI;color:#5B6475;margin-top:2px'>" & FORMAT([Sales Amount], "$#,0") & " of " & FORMAT([Sales Target], "$#,0") & " target</div>"
+			        & "</div>",
+			        "",
+			        [Sales vs Target %], DESC
+			    )
+			RETURN
+			"<div style='font-family:Segoe UI;padding:4px 8px'>"
+			    & "<div style='font:700 16px Segoe UI;color:#14213D'>Revenue vs target by region</div>"
+			    & "<div style='font:12px Segoe UI;color:#5B6475'>Dark line = 100% of target</div>"
+			    & _rows
+			& "</div>"
+		displayFolder: 5. HTML
+
+	/// HTML for the HTML Content visual: top 5 products leaderboard with relative bars.
+	measure 'HTML Top Products' =
+			VAR _top = TOPN(5, ALL(Products[Product]), [Sales Amount], DESC)
+			VAR _max = MAXX(_top, [Sales Amount])
+			VAR _rows =
+			    CONCATENATEX(
+			        _top,
+			        VAR _s = [Sales Amount]
+			        RETURN
+			        "<div style='display:flex;align-items:center;margin:8px 0;font:14px Segoe UI;color:#14213D'>"
+			            & "<div style='width:26px;height:26px;border-radius:13px;background:#0F57FF;color:#FFFFFF;font-weight:700;display:flex;align-items:center;justify-content:center;margin-right:10px'>"
+			            & RANKX(_top, [Sales Amount], , DESC) & "</div>"
+			            & "<div style='flex:1'><div style='display:flex;justify-content:space-between'><span>" & Products[Product] & "</span><b>" & FORMAT(_s, "$#,0") & "</b></div>"
+			            & "<div style='height:6px;background:#E9EDF3;border-radius:3px;margin-top:3px'><div style='width:" & FORMAT(DIVIDE(_s, _max) * 100, "0") & "%;height:6px;background:#0F57FF;border-radius:3px'></div></div></div>"
+			        & "</div>",
+			        "",
+			        [Sales Amount], DESC
+			    )
+			RETURN
+			"<div style='font-family:Segoe UI;padding:4px 8px'>"
+			    & "<div style='font:700 16px Segoe UI;color:#14213D'>Top 5 products</div>"
+			    & _rows
+			& "</div>"
+		displayFolder: 5. HTML
+
+	column Placeholder
+		isHidden
+		lineageTag: e51e0428-1035-4860-9790-92b11b568325
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW("Placeholder", BLANK())
+

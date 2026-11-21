@@ -1,0 +1,41 @@
+/// Store dimension (LATAM).
+table Stores
+	lineageTag: 549d9bb9-c633-45ce-85bd-22e08105d72c
+
+	column StoreKey
+		dataType: int64
+		isHidden
+		lineageTag: 22686dee-42e5-4fd3-be19-bd68e5a83950
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+	column Store
+		dataType: string
+		lineageTag: fffd6536-fa75-4624-b6c8-fab5d6bd282e
+		sourceColumn: Store
+
+	column Country
+		dataType: string
+		lineageTag: 8d6b774f-48e3-4538-be97-16f7ef06fe89
+		sourceColumn: Country
+
+	column Region
+		dataType: string
+		lineageTag: 124f5a48-c4fb-4f02-b5a7-dbe042ede5e5
+		sourceColumn: Region
+
+	column Channel
+		dataType: string
+		lineageTag: 665c0e0f-4dce-4611-8a70-3feb28b251bc
+		sourceColumn: Channel
+
+	partition Stores = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "Stores.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"StoreKey", Int64.Type}, {"Store", type text}, {"Country", type text}, {"Region", type text}, {"Channel", type text}}, "en-US")
+				in
+				    Typed
+

@@ -1,0 +1,6 @@
+/// Folder that contains the CSV files (with trailing backslash). Change it to where you cloned the repo.
+expression DataFolder = "D:\Trabajo\powerbi-dax-showcase\data\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 999a4c77-387a-4d14-9d4c-4f4f35dd378a
+
+	annotation PBI_ResultType = Text
+

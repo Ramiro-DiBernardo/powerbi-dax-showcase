@@ -1,0 +1,47 @@
+/// Monthly sales targets by region.
+table Targets
+	isHidden
+	lineageTag: 07c409b9-e858-41b6-92c3-5ef2182b5293
+
+	column Region
+		dataType: string
+		lineageTag: e3905c31-786e-4f2b-b07c-73147069179e
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1e1d5eac-38bb-4c53-bd4c-620310473206
+		summarizeBy: none
+		sourceColumn: MonthStart
+
+		variation Variation
+			isDefault
+			relationship: 5190427d-043f-4166-9c47-812f6bf4c955
+			defaultHierarchy: LocalDateTable_bcc1cbdf-fa51-4e51-81cd-81e25134dc98.'Jerarquía de fechas'
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column TargetAmount
+		dataType: double
+		lineageTag: aaba7db3-1fa8-4212-8642-210ea623b431
+		summarizeBy: sum
+		sourceColumn: TargetAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Targets = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "Targets.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"Region", type text}, {"MonthStart", type date}, {"TargetAmount", type number}}, "en-US")
+				in
+				    Typed
+

@@ -1,0 +1,17 @@
+ProductKey,Product,Category,ListPrice,UnitCost
+1,Laptop 14 Basic,Laptops,650,470
+2,Laptop 15 Pro,Laptops,1150,820
+3,Laptop 13 Ultra,Laptops,1490,1050
+4,Monitor 24 FHD,Monitors,180,120
+5,Monitor 27 QHD,Monitors,320,215
+6,Monitor 34 Wide,Monitors,540,360
+7,Wireless Mouse,Accessories,25,11
+8,Mechanical Keyboard,Accessories,85,44
+9,USB-C Dock,Accessories,140,82
+10,Headset,Accessories,70,35
+11,Wi-Fi Router AX,Networking,160,98
+12,Access Point,Networking,210,130
+13,Network Switch 24p,Networking,290,185
+14,Laser Printer,Printers,260,170
+15,Label Printer,Printers,330,210
+16,Toner Cartridge,Printers,75,38

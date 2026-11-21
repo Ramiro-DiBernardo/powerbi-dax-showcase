@@ -1,0 +1,26 @@
+model Model
+	culture: es-AR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-AR
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+annotation PBI_QueryOrder = ["Sales","Products","Stores","Targets","DataFolder"]
+
+ref table Sales
+ref table Products
+ref table Stores
+ref table Targets
+ref table Date
+ref table _Measures
+ref table DateTableTemplate_fc2231ad-07ad-46b4-8bb7-64835b48a0bb
+ref table LocalDateTable_bcc1cbdf-fa51-4e51-81cd-81e25134dc98
+
+ref cultureInfo es-AR
+

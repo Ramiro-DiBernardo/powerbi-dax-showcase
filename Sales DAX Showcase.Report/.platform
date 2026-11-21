@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Sales DAX Showcase"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "be97ba8e-68e6-4d0a-8ab9-86d41e9194da"
+  }
+}

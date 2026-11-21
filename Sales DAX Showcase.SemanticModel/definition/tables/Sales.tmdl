@@ -1,0 +1,65 @@
+/// Fact table: one row per order line (synthetic data).
+table Sales
+	lineageTag: 72aefd61-b80d-4f7a-8ff2-a2eb289126e7
+
+	column OrderID
+		dataType: int64
+		lineageTag: f60307fa-bcbc-47ff-904d-74ef0f774fd5
+		summarizeBy: none
+		sourceColumn: OrderID
+
+	column OrderDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e452237b-b0d8-4080-a439-42a92d546b6d
+		summarizeBy: none
+		sourceColumn: OrderDate
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductKey
+		dataType: int64
+		isHidden
+		lineageTag: f60a1753-ef9b-4df6-b306-84a47f1f2c26
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+	column StoreKey
+		dataType: int64
+		isHidden
+		lineageTag: bd811e28-400d-485a-9e2c-538130080fb0
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+	column Quantity
+		dataType: int64
+		lineageTag: 31eb6464-0dac-417d-b4a2-03c83e5be2fb
+		sourceColumn: Quantity
+
+	column UnitPrice
+		dataType: double
+		lineageTag: e26d9df4-f56e-4158-b5c8-7a8e1b5b41e2
+		sourceColumn: UnitPrice
+
+	column UnitCost
+		dataType: double
+		lineageTag: 91ce5e9c-1f38-4b9a-b3ed-0d535dac9a90
+		sourceColumn: UnitCost
+
+	column DiscountPct
+		dataType: double
+		lineageTag: 31b58526-7185-47fd-93d2-757931405d7c
+		sourceColumn: DiscountPct
+
+	partition Sales = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "Sales.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"OrderID", Int64.Type}, {"OrderDate", type date}, {"ProductKey", Int64.Type}, {"StoreKey", Int64.Type}, {"Quantity", Int64.Type}, {"UnitPrice", type number}, {"UnitCost", type number}, {"DiscountPct", type number}}, "en-US")
+				in
+				    Typed
+

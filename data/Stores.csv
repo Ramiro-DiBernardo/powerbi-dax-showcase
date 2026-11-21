@@ -1,0 +1,13 @@
+StoreKey,Store,Country,Region,Channel
+1,Buenos Aires Centro,Argentina,South,In-store
+2,Córdoba,Argentina,South,In-store
+3,Rosario,Argentina,South,In-store
+4,Santiago,Chile,South,In-store
+5,Montevideo,Uruguay,South,In-store
+6,Bogotá,Colombia,North,In-store
+7,Medellín,Colombia,North,In-store
+8,Lima,Peru,North,In-store
+9,Ciudad de México,Mexico,Central,In-store
+10,Guadalajara,Mexico,Central,In-store
+11,San José,Costa Rica,Central,In-store
+12,Online Store,LATAM,Online,Online

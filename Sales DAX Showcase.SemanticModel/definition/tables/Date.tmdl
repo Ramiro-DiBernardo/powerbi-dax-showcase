@@ -1,0 +1,81 @@
+/// Calendar table (marked as date table).
+table Date
+	lineageTag: ce1e9bc8-bf90-41d9-8b93-0ca81e07aefc
+	dataCategory: Time
+
+	column Date
+		isUnique
+		lineageTag: 675aaaa6-f907-43a7-a329-8272c88d8d3e
+		isNameInferred
+		sourceColumn: [Date]
+
+	column Year
+		lineageTag: 5a2cec80-ed00-4505-9792-ecd83714ad3c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+	column Quarter
+		lineageTag: 9a708f9a-1537-4337-bc56-9a707dbba4bc
+		isNameInferred
+		sourceColumn: [Quarter]
+
+	column 'Month Number'
+		isHidden
+		lineageTag: e3176faf-3325-47c7-a936-57a4339550e8
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+	column Month
+		lineageTag: b4d13807-6fac-49d3-9d3a-f3e805a96063
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: 'Month Number'
+
+	column 'Year Month'
+		lineageTag: 45ff7b72-05d2-4545-b858-0afc596b5029
+		isNameInferred
+		sourceColumn: [Year Month]
+
+	column 'Month Start'
+		lineageTag: ccc447ca-6988-4ca7-9f73-4abcd7f75c0b
+		isNameInferred
+		sourceColumn: [Month Start]
+
+	column Weekday
+		lineageTag: 0bb7c8ef-ff7d-4ecf-b274-3ff4a5ef4355
+		isNameInferred
+		sourceColumn: [Weekday]
+		sortByColumn: 'Weekday Number'
+
+	column 'Weekday Number'
+		isHidden
+		lineageTag: 93aca3f3-3425-441a-a3f2-e8f0bd1807b7
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Weekday Number]
+
+	column 'Is Weekend'
+		lineageTag: f467beed-e776-4531-9f57-d178ada7e77f
+		isNameInferred
+		sourceColumn: [Is Weekend]
+
+	partition Date = calculated
+		mode: import
+		source =
+				VAR _Base = CALENDAR(DATE(2025, 1, 1), EOMONTH(MAX(Sales[OrderDate]), 0))
+				RETURN
+				ADDCOLUMNS(
+				    _Base,
+				    "Year", YEAR([Date]),
+				    "Quarter", "Q" & QUARTER([Date]),
+				    "Month Number", MONTH([Date]),
+				    "Month", FORMAT([Date], "mmm"),
+				    "Year Month", FORMAT([Date], "yyyy-mm"),
+				    "Month Start", DATE(YEAR([Date]), MONTH([Date]), 1),
+				    "Weekday", FORMAT([Date], "ddd"),
+				    "Weekday Number", WEEKDAY([Date], 2),
+				    "Is Weekend", WEEKDAY([Date], 2) > 5
+				)
+

@@ -1,0 +1,17 @@
+relationship Sales_OrderDate_Date_Date
+	fromColumn: Sales.OrderDate
+	toColumn: Date.Date
+
+relationship Sales_ProductKey_Products_ProductKey
+	fromColumn: Sales.ProductKey
+	toColumn: Products.ProductKey
+
+relationship Sales_StoreKey_Stores_StoreKey
+	fromColumn: Sales.StoreKey
+	toColumn: Stores.StoreKey
+
+relationship 5190427d-043f-4166-9c47-812f6bf4c955
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Targets.MonthStart
+	toColumn: LocalDateTable_bcc1cbdf-fa51-4e51-81cd-81e25134dc98.Date
+
