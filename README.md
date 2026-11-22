@@ -110,4 +110,4 @@ MEASURES.md                        all DAX measures
 ```
 
 ---
-Ramiro Di Bernardo · [LinkedIn](https://www.linkedin.com/in/ramiro-di-bernardo) · [GitHub](https://github.com/Ramiro-DiBernardo)
+Ramiro Di Bernardo · [LinkedIn](https://www.linkedin.com/in/ramiro-di-bernardo-142077303/) · [GitHub](https://github.com/Ramiro-DiBernardo)
